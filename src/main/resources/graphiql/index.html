@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head><title>GraphiQL</title>
+  <link href="https://unpkg.com/graphiql@3.7.1/graphiql.min.css" rel="stylesheet"/>
+  <link href="https://unpkg.com/@graphiql/plugin-explorer@3.1.0/dist/style.css" rel="stylesheet"/>
+  <style>body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+  }
+
+  #graphiql {
+      height: 100vh;
+  }
+
+  .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 18px;
+  }</style>
+</head>
+<body>
+<div id="loading" class="loading">Loading GraphiQL...</div>
+<div id="graphiql"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/graphiql@3.7.1/graphiql.min.js"></script>
+<script crossorigin src="https://unpkg.com/@graphiql/plugin-explorer@3.1.0/dist/index.umd.js"></script>
+<script>document.addEventListener('DOMContentLoaded', function () {
+  const loading = document.getElementById('loading');
+  const graphiqlDiv = document.getElementById('graphiql');
+  try {
+    loading.style.display = 'none';
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    const subscriptionUrl = protocol + '//' + host + '/graphql';
+    console.log('GraphQL endpoint: /graphql');
+    console.log('WebSocket endpoint: ' + subscriptionUrl);
+    const fetcher = GraphiQL.createFetcher({
+      url: '/graphql',
+      subscriptionUrl: subscriptionUrl,
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    });
+    console.log('GraphiQL version:', GraphiQL.version || 'unknown');
+    console.log('Available plugins:', window.GraphiQLPluginExplorer ? 'Explorer available' : 'Explorer not found');
+    let explorerPlugin = null;
+    try {
+      if (window.GraphiQLPluginExplorer && window.GraphiQLPluginExplorer.explorerPlugin) {
+        explorerPlugin = window.GraphiQLPluginExplorer.explorerPlugin();
+        console.log('Explorer plugin created successfully');
+      } else if (window.GraphiQLPluginExplorer && window.GraphiQLPluginExplorer.default) {
+        explorerPlugin = window.GraphiQLPluginExplorer.default.explorerPlugin();
+        console.log('Explorer plugin created from default export');
+      }
+    } catch (e) {
+      console.error('Failed to create explorer plugin:', e);
+    }
+    const plugins = explorerPlugin ? [explorerPlugin] : [];
+    console.log('Using plugins:', plugins.length);
+    const graphiql = React.createElement(GraphiQL, {
+      fetcher: fetcher,
+      defaultEditorToolsVisibility: true,
+      plugins: plugins
+    });
+    ReactDOM.render(graphiql, graphiqlDiv);
+  } catch (error) {
+    loading.innerHTML = 'Error loading GraphiQL: ' + error.message;
+    loading.style.display = 'flex';
+    console.error('GraphiQL Error:', error);
+  }
+});</script>
+</body>
+</html>

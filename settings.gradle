@@ -1,0 +1,16 @@
+plugins {
+    id 'com.gradleup.nmcp.settings' version '1.6.1'
+}
+
+rootProject.name = 'graphql-server'
+
+nmcpSettings {
+    centralPortal {
+        username = providers.environmentVariable('MAVEN_CENTRAL_USERNAME').getOrElse('')
+        password = providers.environmentVariable('MAVEN_CENTRAL_PASSWORD').getOrElse('')
+        // Deployments are uploaded but must be released manually from
+        // https://central.sonatype.com/ until we trust the pipeline enough
+        // to switch to AUTOMATIC.
+        publishingType = 'USER_MANAGED'
+    }
+}

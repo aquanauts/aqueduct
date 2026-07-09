@@ -1,0 +1,138 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'com.diffplug.spotless' version '7.2.1'
+}
+
+group = 'com.aquatic'
+version = System.getenv().getOrDefault('VERSION', '0.0.0-SNAPSHOT')
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+def javacArgs = [
+        '-Werror',
+        '-Xlint'
+]
+
+tasks.withType(JavaCompile).configureEach {
+    // Newest Java LTS that consumers (including opstech, on JDK 23) can use.
+    // Bump to 25 once downstream toolchains are there.
+    options.release = 21
+    options.encoding = 'UTF-8'
+    options.compilerArgs += javacArgs
+}
+
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Consumers write SPQR annotations and touch graphql-java / reactive-streams
+    // types through this library's API, so these leak intentionally.
+    api 'io.leangen.graphql:spqr:0.12.4'
+    // Pinned to the version SPQR 0.12.4 was built against.
+    // Do NOT bump to 22+ independently: graphql-java 22 broke APIs SPQR uses.
+    api 'com.graphql-java:graphql-java:21.3'
+    api 'org.reactivestreams:reactive-streams:1.0.4'
+    // An ObjectMapper can be supplied through GraphQLServer.Builder.
+    api 'com.fasterxml.jackson.core:jackson-databind:2.18.9'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.9'
+
+    implementation 'org.slf4j:slf4j-api:2.0.18'
+
+    // Jetty types never appear in public signatures.
+    implementation 'org.eclipse.jetty:jetty-server:12.0.37'
+    implementation 'org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.37'
+    implementation 'org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jetty-server:12.0.37'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.hamcrest:hamcrest:3.0'
+    testImplementation 'org.eclipse.jetty.websocket:jetty-websocket-jetty-client:12.0.37'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.18'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+        events TestLogEvent.FAILED, TestLogEvent.SKIPPED
+    }
+}
+
+spotless {
+    java {
+        palantirJavaFormat('2.35.0')
+        importOrder(
+                'com.aquatic',
+                '',
+                'java',
+                '\\#'
+        )
+        removeUnusedImports()
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'graphql-server'
+                description = 'Embedded GraphQL HTTP + WebSocket server for Java, built on graphql-java, GraphQL-SPQR and Jetty 12'
+                // TODO: update once the public GitHub org is decided
+                url = 'https://github.com/aquatic/graphql-server'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/license/mit'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'aquatic'
+                        name = 'Aquatic Capital Management'
+                        email = 'opensource@aquatic.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/aquatic/graphql-server.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/aquatic/graphql-server.git'
+                    url = 'https://github.com/aquatic/graphql-server'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            // TODO: update once the public GitHub org is decided
+            url = uri('https://maven.pkg.github.com/aquatic/graphql-server')
+            credentials {
+                username = System.getenv('GITHUB_ACTOR')
+                password = System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
+}
+
+// Signing is required by Maven Central; skipped locally when no key is present.
+def signingKey = System.getenv('GPG_SIGNING_KEY')
+if (signingKey != null && !signingKey.isEmpty()) {
+    signing {
+        useInMemoryPgpKeys(signingKey, System.getenv('GPG_SIGNING_PASSPHRASE'))
+        sign publishing.publications.mavenJava
+    }
+}
