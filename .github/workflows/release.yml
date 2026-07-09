@@ -2,24 +2,38 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
+# One release at a time so concurrent merges can't compute the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so all tags are available for versioning
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - name: Derive version from tag
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Compute next version
+        run: |
+          last="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+          last="${last:-v0.0.0}"
+          IFS=. read -r major minor patch <<< "${last#v}"
+          version="${major}.${minor}.$((patch + 1))"
+          echo "Releasing ${version} (previous: ${last})"
+          echo "VERSION=${version}" >> "$GITHUB_ENV"
       - name: Build and verify
         run: ./gradlew spotlessCheck build
         env:
@@ -39,3 +53,7 @@ jobs:
           GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      - name: Create GitHub release
+        run: gh release create "v${VERSION}" --target "$GITHUB_SHA" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

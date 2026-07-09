@@ -9,7 +9,7 @@ An embedded GraphQL HTTP + WebSocket server for Java, built on
 - **HTTP GET and POST** query execution with CORS support.
 - **Subscriptions over WebSocket** — supports both the modern `graphql-transport-ws`
   and legacy `graphql-ws` subprotocols.
-- **GraphiQL UI** served at `/graphiql` (optional).
+- **GraphiQL UI** ([GraphQL Yoga](https://the-guild.dev/graphql/yoga-server)'s flavor) served at `/graphiql` (optional).
 - **Operation-name prefixing** for schema federation/namespacing.
 - **Metrics SPI** — plug in your own metrics registry via `GraphQLMetricsListener`.
 - **Reactive-streams publishers** for subscription feeds: `StateChangePublisher`
