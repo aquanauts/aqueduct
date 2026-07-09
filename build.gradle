@@ -79,9 +79,11 @@ dependencies {
 
 tasks.register('runDemo', JavaExec) {
     group = 'application'
-    description = 'Runs a demo GraphQL API at http://localhost:8080 (GraphiQL UI at /graphiql)'
+    description = 'Runs a demo GraphQL API at http://localhost:8080 (GraphiQL UI at /graphiql). ' +
+            'Pass arguments with -PdemoArgs, e.g. ./gradlew runDemo -PdemoArgs=-metrics'
     classpath = sourceSets.demo.runtimeClasspath
     mainClass = 'com.aquatic.graphql.demo.DemoServer'
+    args = ((findProperty('demoArgs') ?: '') as String).tokenize(' ')
 }
 
 test {

@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** The resolvers behind the demo API. */
 public class DemoService {
     private final List<String> items = new CopyOnWriteArrayList<>();
 
