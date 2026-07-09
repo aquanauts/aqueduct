@@ -1,4 +1,4 @@
-# graphql-server
+# aqueduct
 
 An embedded GraphQL HTTP + WebSocket server for Java, built on
 [graphql-java](https://github.com/graphql-java/graphql-java),
@@ -92,6 +92,6 @@ ignores unknown properties, and accepts case-insensitive enums.
 ## Versioning & license
 
 Semantic versioning via git tags (`vX.Y.Z`). Published to Maven Central and GitHub Packages as
-`com.aquatic:graphql-server`.
+`com.aquatic:aqueduct`.
 
 [MIT](LICENSE)

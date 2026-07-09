@@ -89,10 +89,10 @@ publishing {
             from components.java
 
             pom {
-                name = 'graphql-server'
+                name = 'aqueduct'
                 description = 'Embedded GraphQL HTTP + WebSocket server for Java, built on graphql-java, GraphQL-SPQR and Jetty 12'
                 // TODO: update once the public GitHub org is decided
-                url = 'https://github.com/aquatic/graphql-server'
+                url = 'https://github.com/aquatic/aqueduct'
                 licenses {
                     license {
                         name = 'MIT License'
@@ -107,9 +107,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:git://github.com/aquatic/graphql-server.git'
-                    developerConnection = 'scm:git:ssh://git@github.com/aquatic/graphql-server.git'
-                    url = 'https://github.com/aquatic/graphql-server'
+                    connection = 'scm:git:git://github.com/aquatic/aqueduct.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/aquatic/aqueduct.git'
+                    url = 'https://github.com/aquatic/aqueduct'
                 }
             }
         }
@@ -119,7 +119,7 @@ publishing {
         maven {
             name = 'GitHubPackages'
             // TODO: update once the public GitHub org is decided
-            url = uri('https://maven.pkg.github.com/aquatic/graphql-server')
+            url = uri('https://maven.pkg.github.com/aquatic/aqueduct')
             credentials {
                 username = System.getenv('GITHUB_ACTOR')
                 password = System.getenv('GITHUB_TOKEN')
