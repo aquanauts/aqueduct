@@ -40,6 +40,23 @@ public interface GraphQLProvider {
         return from(prefix, interceptor, singletons);
     }
 
+    /**
+     * Builds a provider from SPQR-annotated classes without instantiating them.
+     * Intended for schema export only: instance-method resolvers have no target,
+     * so executing operations against the resulting schema will fail.
+     */
+    static GraphQLProvider fromTypes(String prefix, Class<?>... types) {
+        var generator = new GraphQLSchemaGenerator()
+                .withResolverBuilders(new PrefixedAnnotatedResolverBuilder(prefix))
+                .withValueMapperFactory(new JacksonValueMapperFactory());
+
+        for (var type : types) {
+            // No per-source builders, so the global prefixed builder applies.
+            generator.withOperationsFromType(type);
+        }
+        return generator::generate;
+    }
+
     /** Escape hatch: builds a provider with a custom SPQR resolver interceptor. */
     static GraphQLProvider from(String prefix, ResolverInterceptor interceptor, Object... singletons) {
         var generator = new GraphQLSchemaGenerator()

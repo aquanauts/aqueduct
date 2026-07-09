@@ -93,6 +93,37 @@ callbacks for every operation invocation and subscription start/end:
 var provider = GraphQLProvider.from("MyApp_", myListener, services...);
 ```
 
+## Schema export
+
+Annotate each resolver service with `@GraphQLApi`, and the schema can be exported by classpath
+scan — no central enumeration, and services are never instantiated (constructor dependencies
+don't matter):
+
+```java
+@GraphQLApi
+public class OrderService {
+    public OrderService(Database db, Clock clock) { ... } // never called during export
+
+    @GraphQLMutation(name = "placeOrder")
+    public Order placeOrder(@GraphQLArgument(name = "symbol") String symbol) { ... }
+}
+```
+
+```groovy
+tasks.register('exportGraphQLSchema', JavaExec) {
+    group = 'graphql'
+    description = 'Exports the GraphQL schema as SDL'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.aquatic.graphql.schema.SchemaExport'
+    args = ['--package', 'com.example.myapp', '--output', 'schema.graphql']
+}
+```
+
+`--package` is repeatable (or comma-separated), `--prefix MyApp_` applies operation-name
+prefixing, and omitting `--output` prints to stdout. Mutation-only schemas automatically get a
+`_noop` placeholder query (GraphQL requires a non-empty query type). See `exportDemoSchema` in
+this repo's build for a working example.
+
 ## Custom ObjectMapper
 
 ```java

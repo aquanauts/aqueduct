@@ -1,5 +1,7 @@
 package com.aquatic.graphql.demo;
 
+import com.aquatic.graphql.annotations.GraphQLApi;
+
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
@@ -15,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+@GraphQLApi
 public class DemoService {
     private final List<String> items = new CopyOnWriteArrayList<>();
 
