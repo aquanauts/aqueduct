@@ -44,6 +44,21 @@ curl 'http://localhost:8080/graphql?query={now}'
 
 or open http://localhost:8080/graphiql.
 
+## Try it: demo API
+
+```bash
+./gradlew runDemo
+```
+
+starts a demo API at http://localhost:8080 (GraphiQL UI at `/graphiql`). Things to try:
+
+```graphql
+query        { hello(name: "aqueduct") }
+mutation     { addItem(value: "first") }
+query        { items }
+subscription { countTo(limit: 5) }
+```
+
 ## Subscriptions
 
 Return a reactive-streams `Publisher` from a method annotated with `@GraphQLSubscription`:

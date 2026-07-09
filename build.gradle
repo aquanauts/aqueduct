@@ -36,6 +36,19 @@ repositories {
     mavenCentral()
 }
 
+// Demo API sources (not published): ./gradlew runDemo
+sourceSets {
+    demo {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    demoImplementation.extendsFrom implementation
+    demoRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
     // Consumers write SPQR annotations and touch graphql-java / reactive-streams
     // types through this library's API, so these leak intentionally.
@@ -60,6 +73,15 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:3.0'
     testImplementation 'org.eclipse.jetty.websocket:jetty-websocket-jetty-client:12.0.37'
     testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.18'
+
+    demoRuntimeOnly 'org.slf4j:slf4j-simple:2.0.18'
+}
+
+tasks.register('runDemo', JavaExec) {
+    group = 'application'
+    description = 'Runs a demo GraphQL API at http://localhost:8080 (GraphiQL UI at /graphiql)'
+    classpath = sourceSets.demo.runtimeClasspath
+    mainClass = 'com.aquatic.graphql.demo.DemoServer'
 }
 
 test {
